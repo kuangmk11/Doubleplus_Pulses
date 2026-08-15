@@ -67,6 +67,57 @@ amplitude arrives.
 
 Full write-up: **[`docs/pulses-plus-design.md`](docs/pulses-plus-design.md)**.
 
+## Using it
+
+The two buses are **two independent reads of the same shift register**. Whatever either one
+plays is built from the same eight bits on the same loop, so they cannot drift apart — but give
+them different channels, or put one in AND and the other in OR, and they come out at different
+densities. Related, never identical. Most of the musical mileage is in that gap.
+
+### Gates on A, note changes on B
+
+The patch this turned out to be best at, and not one it was designed for:
+
+1. **OUT A → your envelope or VCA gate.** A few channels to bus A in **OR** — a busy,
+   rhythmic gate stream.
+2. **OUT B → a quantizer's trigger or sample input**, with the Turing Machine's CV output
+   feeding that quantizer's CV input. A *different*, smaller set of channels to bus B, in
+   **AND** for something sparser again.
+
+The quantizer only samples when bus B fires, so the note is **held** across every gate bus A
+produces in between. A melody moves on its own slow rhythm while the gates articulate
+underneath — and because both rhythms are subsets of one register, the note changes land on
+beats the gate pattern already stresses. It reads as a phrase, not as two voices running at
+once.
+
+Being a Turing Machine underneath, the loop-length and randomness controls then act on the
+whole thing at once: lock the register for a repeating riff, open it a crack and the melody
+mutates while staying in its scale.
+
+**Pulse width passes straight through.** The board is purely combinational: it merges what
+arrives on the ribbon and never looks at the clock. It does not need to — the Turing Machine's
+expander bus already carries each bit ANDed with the clock, so the bits arrive as *pulses*, and
+the diode merge preserves their width. Feed the TM a narrow clock and the outputs are narrow;
+feed it a wide one and they are wide, all the way to OUT A and OUT B.
+
+So an AND that is true on three consecutive steps gives three pulses, one per step — each
+re-triggering the envelope or re-pinging the quantizer, rather than merging into one long gate.
+The note changes on every step the condition holds, which is why choosing a condition that comes
+true *rarely* is what makes the melody move slowly.
+
+**Things to reach for:**
+
+- **B in AND with two or three channels** is the sweet spot. AND of several bits comes true
+  rarely, which is what you want from a melody that moves every few bars rather than every step.
+- **MUTE on B** freezes the pitch without touching the gate pattern — drop the melody in and
+  out by hand mid-take. That is what the centre position is for.
+- **The EXT jack earns its keep here.** Patch an outside rhythm into channel 8 and AND it into
+  bus B, and the note only changes where your own pattern and the Turing Machine agree —
+  a melody keyed to something the TM knows nothing about.
+- An **AND bus with nothing routed to it sits high**, held there by its 10k pull-up rather than
+  driven by any bit, so it never pings anything. Route at least one channel to a bus you want
+  triggers from.
+
 ## Key parts
 
 10 × Taiway 200-MDP3 sub-miniature DPDT ON-OFF-ON toggles (ø4.95 bushing), 2 × CD4050 buffers,

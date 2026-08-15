@@ -1,0 +1,36 @@
+# Licence
+
+**Pulses Plus** — hardware design, panel artwork, documentation and build tooling
+in this repository — is designed by Missing Mile Modular and licensed under
+
+**Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International
+(CC BY-NC-SA 4.0)**
+
+SPDX-License-Identifier: `CC-BY-NC-SA-4.0`
+
+- Deed: https://creativecommons.org/licenses/by-nc-sa/4.0/
+- Full legal text: https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+
+In short: you may share and adapt this design, provided you give appropriate
+credit, do not use it for commercial purposes, and distribute your adaptations
+under these same terms.
+
+## Provenance
+
+This project began as a fork of
+[TomWhitwell/Turing-Pulse-Expander](https://github.com/TomWhitwell/Turing-Pulse-Expander).
+No file of Tom Whitwell's remains in this repository — Pulses Plus is an
+independent design that only shares the 16-pin expander ribbon interface with the
+Music Thing Turing Machine.
+
+Tom Whitwell's original Rev 2 expander files, and the earlier studies that fed
+into this design, are kept in the archive repository:
+https://github.com/kuangmk11/Turing-Pulse-Expander
+
+Nothing in this licence grants rights over Tom Whitwell's work.
+
+## Third-party material
+
+`docs/sw-t2-4x-b-a2-ma2-data-sheet.pdf` is the manufacturer's datasheet for the
+Taiway 200-MDP3 toggle switch, included for reference. It remains the property of
+its publisher and is not covered by the licence above.

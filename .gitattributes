@@ -1,0 +1,23 @@
+# Line-ending policy.
+#
+# KiCad on Windows writes CRLF; this repo stores LF. Without these rules a clone
+# made on one platform shows every CRLF file as wholly rewritten on the other.
+* text=auto eol=lf
+
+# STEP models are ASCII, so they normalise fine, but diffing them is noise.
+*.stp text eol=lf -diff
+*.step text eol=lf -diff
+
+# Gerbers and drill files are generated — normalise, but don't diff them.
+*.gbr text eol=lf -diff
+*.gbrjob text eol=lf -diff
+*.drl text eol=lf -diff
+
+# Genuinely binary — never touch the bytes.
+*.zip binary
+*.rar binary
+*.pdf binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.PNG binary

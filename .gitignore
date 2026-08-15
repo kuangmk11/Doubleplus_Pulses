@@ -1,0 +1,18 @@
+# --- KiCad editor / tool noise ---
+*-backups/
+*.kicad_prl
+fp-info-cache
+*.lck
+~*.lck
+*.bak
+3DxService.log
+
+# --- Python tooling ---
+__pycache__/
+*.pyc
+
+# --- large regenerable 3D exports (note: *.stp models ARE tracked) ---
+*.step
+
+# --- editor history plugins ---
+.history/

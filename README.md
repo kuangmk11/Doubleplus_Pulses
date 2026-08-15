@@ -100,7 +100,7 @@ circles. `A`/`B` beside each toggle are throw directions, not names. The mode st
 
 ## Related repositories
 
-- **[pulses_plus_vcvrack](https://github.com/kuangmk11/pulses_plus_vcvrack)** — a VCV Rack 2 port
+- **[Doubleplus_Pulses_VCV](https://github.com/kuangmk11/Doubleplus_Pulses_VCV)** — a VCV Rack 2 port
   of this module. It reconstructs the Turing Machine's shift register locally, so it runs without
   the hardware.
 - **[Turing-Pulse-Expander](https://github.com/kuangmk11/Turing-Pulse-Expander)** — the archive:

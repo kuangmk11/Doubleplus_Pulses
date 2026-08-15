@@ -1,18 +1,45 @@
+# --- Claude Code: machine-local settings ---
+# Shared project config (.claude/settings.json) is fine to commit. The *.local.json
+# files hold per-machine permission grants and absolute filesystem paths.
+.claude/settings.local.json
+.claude/*.local.json
+
 # --- KiCad editor / tool noise ---
 *-backups/
 *.kicad_prl
 fp-info-cache
 *.lck
 ~*.lck
+_autosave-*
 *.bak
+* - bak.*
+*-bak.*
 3DxService.log
+
+# --- KiCad generated reports and routing exchange ---
+*-erc.rpt
+*-drc.rpt
+*.dsn
+*.ses
+
+# --- large regenerable 3D exports (note: *.stp models ARE tracked) ---
+*.step
 
 # --- Python tooling ---
 __pycache__/
 *.pyc
 
-# --- large regenerable 3D exports (note: *.stp models ARE tracked) ---
-*.step
-
-# --- editor history plugins ---
+# --- editors ---
 .history/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS / filesystem junk ---
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini

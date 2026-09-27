@@ -27,9 +27,10 @@ LABEL_SIZE, PITCH_LABEL = 2.0, 2.2
 SMALL_SIZE, PITCH_SMALL = 1.6, 1.7
 TITLE_SIZE, PITCH_TITLE = 3.2, 3.4
 LOGO_SIZE, PITCH_LOGO = 1.3, 1.45
-RING_GAP = 1.2
+RING_R, RING_W = 4.75, 0.5   # the output ring: absolute radius, drawn heavy
 EDGE_MARGIN = 0.6
 LABEL_GAP = 1.2          # drawn extent -> nearest edge of the label cell
+LABEL_GAP_HW = 2.2       # the same at a jack or a switch: the nut takes the extra
 
 # --- inherited geometry, panel-local (X right, Y down from the top edge) -----
 LED_X = 20.08
@@ -160,10 +161,12 @@ def stop_short(cx, cy, r, gap, ux, uy):
     return cx + ux * d, cy + uy * d
 
 
-def below(drawn_r, size):
+def below(drawn_r, size, gap=LABEL_GAP):
     """Centre-to-centre offset for a name sitting below what it names,
-    measured from the drawn extent (a ring, not the hole) per PANEL_STYLE."""
-    return drawn_r + LABEL_GAP + size / 2.0
+    measured from the drawn extent (a ring, not the hole) per PANEL_STYLE.
+    Jacks and switches pass LABEL_GAP_HW: their nuts stand proud of the
+    artwork and eat the clearance the drawing claims."""
+    return drawn_r + gap + size / 2.0
 
 
 # --- title -------------------------------------------------------------------
@@ -191,13 +194,14 @@ for i, ly in enumerate(LED_Y):
 # Throw marks. Every routing toggle throws on the X axis and the wiring is
 # identical across all eight (pads 2/5 = bus A, pads 3/6 = bus B), so the mark
 # is the same on every switch: lever left -> bus A, lever right -> bus B.
-dx = R_SW + LABEL_GAP + SMALL_SIZE / 2.0
+dx = R_SW + LABEL_GAP_HW + SMALL_SIZE / 2.0
 for sx, sy in SW_XY:
     text("A", sx - dx, sy, SMALL_SIZE, PITCH_SMALL)
     text("B", sx + dx, sy, SMALL_SIZE, PITCH_SMALL)
 
 # --- EXT input (normalled; no ring, it is an input) --------------------------
-text("EXT", EXT_XY[0], EXT_XY[1] + below(R_JACK, LABEL_SIZE), LABEL_SIZE, PITCH_LABEL)
+text("EXT", EXT_XY[0], EXT_XY[1] + below(R_JACK, LABEL_SIZE, LABEL_GAP_HW),
+     LABEL_SIZE, PITCH_LABEL)
 
 # --- mode switches: AND up, MUTE centre, OR down -----------------------------
 # Verified against the schematic: SW9 pin 2 -> BUSA_OR sits at pad 2, which at
@@ -209,10 +213,10 @@ text("OR", LED_X, 102.9, LABEL_SIZE, PITCH_LABEL)
 
 # --- outputs: a ring means signal leaves here --------------------------------
 for ox_ in (COL_L, COL_R):
-    circle(ox_, OUT_Y, R_JACK + RING_GAP)
-ring_r = R_JACK + RING_GAP
-text("A", COL_L, OUT_Y + below(ring_r, LABEL_SIZE), LABEL_SIZE, PITCH_LABEL)
-text("B", COL_R, OUT_Y + below(ring_r, LABEL_SIZE), LABEL_SIZE, PITCH_LABEL)
+    circle(ox_, OUT_Y, RING_R, width=RING_W)
+for lbl, cx in (("A", COL_L), ("B", COL_R)):
+    text(lbl, cx, OUT_Y + below(RING_R, LABEL_SIZE, LABEL_GAP_HW),
+         LABEL_SIZE, PITCH_LABEL)
 
 # --- wordmark, letterspaced inside a two-lead component frame ----------------
 wm_y = H - 7.0
@@ -246,7 +250,7 @@ for (sx, sy), ly in zip(SW_XY, LED_Y):
     ex, ey = stop_short(LED_X, ly, R_LED, GAP, -side * 0.7071, 0.7071)
     knee_x = ex - side * abs(ey - sy)
     # clear the throw mark on that side before starting the run
-    start_x = sx + side * (R_SW + LABEL_GAP + SMALL_SIZE + PITCH_SMALL / 2.0 + GAP)
+    start_x = sx + side * (R_SW + LABEL_GAP_HW + SMALL_SIZE + PITCH_SMALL / 2.0 + GAP)
     wire([(start_x, sy), (knee_x, sy), (ex, ey)])
 
 # EXT normals into channel 8: unplugged, BIT8 feeds it; plugged, this jack does.
@@ -258,7 +262,7 @@ wire([(EXT_XY[0] + R_JACK + GAP, EXT_XY[1]), (knee_x, EXT_XY[1]), (ex, ey)])
 # cross the mode switch, and a wire may not cross a control.
 for cx in (COL_L, COL_R):
     wire([(cx, BUSLED_Y + R_LED + GAP), (cx, MODE_Y - R_SW - GAP)])
-    wire([(cx, MODE_Y + R_SW + GAP), (cx, OUT_Y - (R_JACK + RING_GAP) - GAP)])
+    wire([(cx, MODE_Y + R_SW + GAP), (cx, OUT_Y - RING_R - GAP)])
 
 # --- back of panel -----------------------------------------------------------
 # Two clear bands on the back: 100.1-108.4 (below the mode switches, above the

@@ -36,7 +36,7 @@ four fixed ANDs become a strict subset of what the switches can do.
 | `BOM_DigiKey.csv` | the same BOM as a DigiKey cart upload |
 | `gerbers/` | fab packages — see below |
 | `tools/build_panel.py` | regenerates the panel artwork |
-| `PANEL_STYLE_v1.04.md` | the panel house style |
+| `PANEL_STYLE_v1.12.md` | the panel house style |
 | `docs/pulses-plus-design.md` | full design write-up, including the diode-leak analysis and why 6 HP was abandoned |
 | `docs/sw-t2-4x-b-a2-ma2-data-sheet.pdf` | Taiway 200-MDP3 toggle datasheet |
 
@@ -49,6 +49,37 @@ four fixed ANDs become a strict subset of what the switches can do.
 
 The loose `.gbr`/`.drl` files at the top of `gerbers/` are the most recent plot of the
 main board and the v1/v2 panels, kept unzipped for inspection.
+
+> ⚠ **`gerbers_v2/` predates the C5/C6 glitch fix below and must not be sent out as-is.** Re-plot it
+> from `pulses_plus_submin_v2.kicad_pcb` first.
+
+---
+
+## Erratum — ghost triggers on edge-sensitive gate inputs
+
+**Any board built without C5/C6 needs a two-capacitor rework.**
+
+**Symptom.** On the step *after* a real trigger — a step where the bus should be silent — a
+downstream envelope fires an extra time. The bus LED never visibly flashes, and the same envelope
+behaves correctly on the Turing Machine's own pulse output and on a stock Pulses. A **Kassutronics
+ASR** is the known case; the affected class is any gate input that triggers on the *rising edge* at
+a low threshold (the ASR's fires from ~+1.2 V).
+
+**Cause.** The Turing Machine's expander bits are `stage AND clock`, and the clock's rising edge
+opens that AND before the shift register has finished shifting — so the ribbon briefly presents the
+previous step's pattern. This module's two cascaded CD40106 Schmitt buffers then regenerate that
+soft sub-µs bump into a sharp, near-full-amplitude micro-gate. Full analysis in
+[`docs/pulses-plus-design.md`](docs/pulses-plus-design.md#stale-bit-glitch-and-edge-sensitive-gate-inputs).
+
+**Fix.** Tack a **4.7 nF** ceramic on top of **R15**, and another on top of **R16**. Those 1206 pads
+are already `BUSA_SEL`→GND and `BUSB_SEL`→GND on the back of the board, so there are no trace cuts,
+no lifted pins, and it is fully reversible. Verified on hardware.
+
+- **Do not use a smaller value.** 1 nF was measured insufficient; 2.2 nF computes marginal.
+- **Multing the output is not a workaround.** It appears to help and then stops helping — cable
+  capacitance is an order of magnitude too small to filter this.
+- The fix is in the **v2** project files (`pulses_plus_submin_v2.*`) as C5/C6. The v1 files do not
+  have it.
 
 ## How it works
 
@@ -129,7 +160,7 @@ switched variant** — and 2 × 2×8 IDC headers for ribbon in and thru. See [`B
 ## Panel
 
 The current panel is **v4**, `pulses_plus_submin_panel_v4.kicad_pcb` — white silkscreen on black
-soldermask, drawn to [`PANEL_STYLE_v1.04.md`](PANEL_STYLE_v1.04.md).
+soldermask, drawn to [`PANEL_STYLE_v1.12.md`](PANEL_STYLE_v1.12.md).
 
 It is generated. [`tools/build_panel.py`](tools/build_panel.py) reads the v1 panel and regenerates
 only the artwork, inheriting every control-hole position, so the style guide's one non-negotiable

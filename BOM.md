@@ -1,6 +1,6 @@
 # Pulses Plus (sub-mini) — Bill of Materials
 
-Generated from `pulses_plus_submin.kicad_sch` (87 placed components, 18 line items).
+Generated from `pulses_plus_submin_v2.kicad_sch` (89 placed components, 19 line items).
 Two sourcing columns:
 
 - **DigiKey** — for hand assembly (the THT parts and jacks are hand-solder anyway).
@@ -34,6 +34,14 @@ not a DigiKey/LCSC stock part).
 | 13 | 10 | 3mm LED, high-brightness | LED1–LED10 | 3mm THT | e.g. Kingbright WP710A10 series | any 3mm LED | — |
 | 14 | 3 | 3.5mm mono jack "Thonkiconn" | J3 (EXT, switched), J4 (OUT A), J5 (OUT B) | PJ301M-12 / PJ398SM | **PJ398SM** | not stocked | not stocked |
 | 15 | 2 | 2×8 IDC box header, 2.54mm | J1 (PULSES IN), J2 (CHAIN THRU) | shrouded, vertical | generic 2x8 IDC | 2×8 shrouded header | C(verify) |
+| 16 | 2 | **4.7n capacitor** | C5, C6 | 1206, X7R, 50V | Samsung **CL31B472KBCNNNC** *(verify)* | search mfr PN | C(verify) |
+
+**C5/C6 are the glitch filter** — 4.7 nF from each mode-switch common (`BUSA_SEL` / `BUSB_SEL`)
+to GND, sitting across R15/R16. They are not decoupling and not optional: without them the module
+passes a sub-µs stale-bit spike from the Turing Machine's expander bus through its Schmitt output
+buffers, which false-triggers edge-sensitive gate inputs (a Kassutronics ASR is the known case).
+**Do not substitute 1 n or 2.2 n** — 1 n was measured insufficient and 2.2 n computes marginal. See
+the design doc's *Stale-bit glitch* section.
 
 **J3 must be the switched (normalling) variant** — its break contact normals buffered BIT8 into
 channel 8. J4/J5 are plain mono. All three are the same Thonkiconn body.
@@ -64,14 +72,13 @@ numbers are representative JLCPCB Basic parts.
 
 ## Action items before fab
 
-1. **Diode footprint — DONE on the board, still needs the schematic.** All 33 diodes (D1–D33)
-   are now on `Diode_SMD:D_SOD-123` on the PCB, part **1N4148W / C81598 / DK 1N4148W-FDICT-ND**.
-   Nets verified intact after the swap (8 diodes per bus, pad 1 = K → bus/GND, pad 2 = A).
-   > ⚠ **The change was made in the PCB only — the schematic Footprint fields still read
-   > `D_1206_3216Metric` (33 of them).** Until those are updated, *Update PCB from Schematic* will
-   > revert all 33 diodes to 1206. Fix in KiCad: **pcbnew → Tools → Update Schematic from PCB**
-   > (back-annotate footprints), or in the schematic editor set the Footprint field of D1–D33 to
-   > `Diode_SMD:D_SOD-123` via **Tools → Edit Symbol Fields**.
+1. **Diode footprint — RESOLVED in the v2 project.** All 33 diodes (D1–D33) are on
+   `Diode_SMD:D_SOD-123`, part **1N4148W / C81598 / DK 1N4148W-FDICT-ND**, in *both*
+   `pulses_plus_submin_v2.kicad_sch` and `pulses_plus_submin_v2.kicad_pcb` — verified by inspection,
+   so *Update PCB from Schematic* no longer reverts them to 1206. Nets intact (8 diodes per bus,
+   pad 1 = K → bus/GND, pad 2 = A).
+   > ⚠ The **v1** files (`pulses_plus_submin.kicad_sch`) still carry the old 1206 footprint fields.
+   > Work in the v2 project.
 
 2. **Meter the switch** — confirm centre pin = common on the actual Taiway part before committing
    to a board run (design open-question #1). Everything assumes centre-is-common.

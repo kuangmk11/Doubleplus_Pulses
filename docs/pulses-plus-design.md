@@ -176,6 +176,65 @@ Only pole 1 is used; pole 2 is left unconnected.
 **Known quirk:** AND of zero terms is vacuously true. A bus in AND mode with nothing routed to it
 sits high (DC). Harmless, but don't be surprised by it — and the mute position is right there.
 
+### Stale-bit glitch and edge-sensitive gate inputs
+
+**C5/C6 — 4.7 nF from each mode-switch common (`BUSA_SEL` / `BUSB_SEL`) to GND, across R15/R16 —
+are not decoupling. They are a required glitch filter**, added after a built module was found to
+false-trigger a Kassutronics ASR envelope: on the step *after* a real trigger, on a step where the
+bus should be silent, the ASR fired an extra attack. The bus LED never visibly flashed, and the same
+ASR was clean on the Turing Machine's own pulse output and on a stock Pulses.
+
+**The mechanism is a race inside the Turing Machine, not on this board.** The ribbon bits are
+`stage AND clock`. The clock's rising edge both opens that AND and clocks the shift register, so for
+the register's propagation time the ribbon briefly presents the **previous step's pattern**. On the
+step after a hit, that stale pattern re-satisfies the same bus condition it satisfied the step
+before — in OR mode or in AND mode alike.
+
+**What makes it audible *here* is our own output stage.** Everywhere else in a rack that stale-bit
+bump stays small and slow-rising, and nothing notices. This board feeds the merge bus into two
+cascaded CD40106 Schmitt inverters, which regenerate anything crossing V<sub>T+</sub> ≈ 6.8 V into a
+sharp, near-full-swing micro-gate. The ASR's gate input is an op-amp Schmitt that accepts anything
+above ~+1.2 V and **differentiates the rising edge** into its trigger pulse — so it is both far more
+sensitive than a CMOS input and sensitive to dV/dt rather than level. A sub-µs, ~2 mA flash of LED9
+is invisible, which is why the LED gave no clue.
+
+**The filter belongs ahead of the Schmitt, not at the jack.** Upstream, the glitch only has to be
+held below 6.8 V; downstream it is already a clean 12 V pulse that would have to be attenuated below
+1.2 V against R17's 1k. That was confirmed on the bench: extra patch cables (~100–300 pF, τ ≈
+0.1–0.3 µs) did **not** stop it, while rolling the level off through an attenuverter did. `BUSx_SEL`
+also sits at ~10k, ten times the jack's impedance, so a small cap does ten times as much work there,
+and costs nothing in edge quality because the Schmitt re-squares everything behind it.
+
+Sizing, with the bus *driven* through ~0.7k (CD4050 output plus merge diode) during the glitch:
+
+| C on `BUSx_SEL` | τ | Peak from a ~1 µs glitch | Tail added (10k·C) | Bench result |
+|---|---|---|---|---|
+| 1 nF | 0.7 µs | ≈9.1 V | 10 µs | **ghost still present** |
+| 2.2 nF | 1.5 µs | ≈5.7 V — 1.1 V margin | 22 µs | not tried; too close to call |
+| **4.7 nF** | 3.3 µs | **≈3.1 V** | 47 µs | **ghost gone — shipped value** |
+
+1 nF failing and 4.7 nF working brackets the real glitch at roughly **0.5–2 µs**, wider than the
+register's propagation delay alone would suggest. **Do not substitute a smaller value.** The cost of
+4.7 nF is 47 µs added to the *passive* edge only — the OR-mode fall and the AND-mode rise — which is
+three decades under the TM's millisecond pulse widths.
+
+**Optional refinement for a future board, untested:** a series **22k** between each mode-switch
+common and its CD40106 input, with **1 nF** to GND at the gate pin. Driven through 22k, τ ≈ 22 µs
+applies to *both* edges, so the delay is symmetric and gate width is preserved exactly instead of
+losing a one-sided 47 µs — and it rejects more than the fitted cap does. It needs a trace, so it
+cannot be reworked onto an existing board; the plain 4.7 nF stays the default until someone runs it
+on a bench.
+
+> **The general lesson.** A Schmitt buffer is a glitch *amplifier*: it takes any excursion past its
+> threshold, however brief or soft, and hands on a clean full-amplitude edge. Put one at a module's
+> output and you become the module that makes an upstream glitch matter. And some gate inputs
+> trigger on dV/dt at ~1 V, so "everything else in my rack ignores this" is not evidence that a
+> spike is harmless.
+
+**Reworking a board built before C5/C6 existed:** tack a 4.7 nF ceramic directly on top of R15 and
+another on top of R16. Those 1206 pads are already `BUSx_SEL`→GND on the back of the board — no
+trace cuts, no lifted pins, fully reversible.
+
 ---
 
 ## Gate and buffer budget

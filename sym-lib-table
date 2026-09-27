@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "switch_fix")(type "KiCad")(uri "${KIPRJMOD}/switch_fix.kicad_sym")(options "")(descr "DPDT ON-OFF-ON symbol with the pin numbering the project footprint expects"))
+)

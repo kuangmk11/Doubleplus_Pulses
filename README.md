@@ -42,16 +42,16 @@ four fixed ANDs become a strict subset of what the switches can do.
 
 ### Which gerbers to order
 
-`gerbers/` accumulated every revision that was sent out. The current pair is:
+`gerbers/` accumulated every revision that was sent out. The panel to order is
+`gerbers/panelv4.rar`. For the board:
 
-- **Board** — `controlv2.zip`
-- **Panel** — `panelv4.rar`
+- **`gerbers_v2/`** — current plot of `pulses_plus_submin_v2.kicad_pcb`, **including C5/C6**
+  (see the erratum below). Not yet fabbed.
+- **`gerbers/controlv2.zip`** — what was actually fabbed and built. Boards from this package
+  predate C5/C6 and need the two-capacitor rework.
 
 The loose `.gbr`/`.drl` files at the top of `gerbers/` are the most recent plot of the
 main board and the v1/v2 panels, kept unzipped for inspection.
-
-> ⚠ **`gerbers_v2/` predates the C5/C6 glitch fix below and must not be sent out as-is.** Re-plot it
-> from `pulses_plus_submin_v2.kicad_pcb` first.
 
 ---
 
